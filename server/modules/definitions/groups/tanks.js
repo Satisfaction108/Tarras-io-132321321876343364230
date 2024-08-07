@@ -3297,6 +3297,263 @@ Class.coil = {
         }
     ]
 }
+Class.missiler = { //t1 from basic
+   PARENT: "genericTank",
+   LABEL: 'Missiler',
+   GUNS: [ {
+         POSITION: [ 38, 8, 1, -17, 0, 0, 0, ],
+         PROPERTIES: {
+            SHOOT_SETTINGS: combineStats([g.basic,g.pounder,{damage: 0.3,speed: 1.2,reload: 0.5}]),
+            TYPE: "minimissile"
+         }, }, {
+         POSITION: [ 9, 10, 1, 15, 0, 0, 0, ],
+         PROPERTIES: {
+            SHOOT_SETTINGS: combineStats([g.basic,g.fake,g.pounder,{damage: 0.7,speed: 1.2}]), // fake barrel
+            TYPE: "bullet"
+         }, }, {
+         POSITION: [ 3, 3, 1, 9, 3.2, 0, 0, ],
+         }, {
+         POSITION: [ 3, 3, 1, 9, -3.2, 0, 0, ],
+         }, {
+         POSITION: [ 3, 3, 1, -15, 0, 0, 0, ],
+         }, {
+         POSITION: [ 6, 9, 1.2, -21, 0, 0, 0, ],
+         }, 
+     ],
+};
+
+Class.thornExplode = {
+    PARENT: [Class.trap],
+    LABEL: 'Thorn',
+    FACING_TYPE: 'smoothWithMotion',
+    BODY: {
+      RANGE: 100 // for how long it will stay on the ground
+    },
+    SHAPE: [[-1,1],[-1,-1],[1.2,0]]
+};
+Class.thornMissilerProj = {
+    PARENT: "bullet",
+    LABEL: "Thorn Projectile",
+    TURRETS: [
+        {
+            POSITION: [17, 0, 0, 0, 360, 0],
+            TYPE: "spikeBody",
+        },
+        {
+            POSITION: [17, 0, 0, 90, 360, 0],
+            TYPE: "spikeBody",
+        },
+        {
+            POSITION: [17, 0, 0, 180, 360, 0],
+            TYPE: "spikeBody",
+        },
+        {
+            POSITION: [17, 0, 0, 270, 360, 0],
+            TYPE: "spikeBody",
+        },
+    ],
+    GUNS: (() => {
+        let e = [{
+            POSITION: [14, 6, 1, 0, 0, 180, 0],
+            PROPERTIES: {
+                AUTOFIRE: true,
+                SHOOT_SETTINGS: combineStats([g.basic]),
+                TYPE: ["bullet", {
+                    PERSISTS_AFTER_DEATH: true
+                }],
+                STAT_CALCULATOR: gunCalcNames.thruster
+            }
+        }];
+        for (let T = 0; T < 12; T++) e.push({
+            POSITION: [0, 8, 1, 0, 0, (360 / 12) * T, 1 / 0],
+            PROPERTIES: {
+                SHOOT_SETTINGS: combineStats([g.trap]),
+                TYPE: ["thornTrapExplode", {
+                    PERSISTS_AFTER_DEATH: true
+                }],
+                SHOOT_ON_DEATH: true
+            }
+        });
+        return e
+    })()
+};
+Class.thornMissiler = { //t2 from missiler
+   PARENT: "genericTank",
+   LABEL: 'Thorn Missiler',
+   GUNS: [ {
+         POSITION: [ 38, 8, 1, -17, 0, 0, 0, ],
+         PROPERTIES: {
+            SHOOT_SETTINGS: combineStats([g.basic,g.pounder,{damage: 0.3,speed: 1.2,reload: 1.5}]),
+            TYPE: "thornMissilerProj"
+         }, }, {
+         POSITION: [ 9, 10, 1, 15, 0, 0, 0, ],
+         PROPERTIES: {
+            SHOOT_SETTINGS: combineStats([g.basic,g.fake,g.pounder,{damage: 0.3,speed: 1.2,reload: 1.5}]),
+            TYPE: "bullet"
+         }, }, {
+         POSITION: [ 3, 3, 1, 9, 3.2, 0, 0, ],
+         }, {
+         POSITION: [ 3, 3, 1, 9, -3.2, 0, 0, ],
+         }, {
+         POSITION: [ 3, 3, 1, -15, 0, 0, 0, ],
+         }, {
+         POSITION: [ 6, 9, 1.2, -21, 0, 0, 0, ],
+         }, {
+         POSITION: [ 6, 9, 0, -13, 0, -45, 0, ],
+         }, {
+         POSITION: [ 6, 9, 0, -13, 0, 45, 0, ],
+         }, {
+         POSITION: [ 6, 9, 0, -13, 0, -75, 0, ],
+         }, {
+         POSITION: [ 6, 9, 0, -13, 0, 75, 0, ],
+         }, {
+         POSITION: [ 6, 9, 0, -13, 0, -105, 0, ],
+         }, {
+         POSITION: [ 6, 9, 0, -13, 0, 105, 0, ],
+         }, {
+         POSITION: [ 6, 9, 0, -13, 0, -135, 0, ],
+         }, {
+         POSITION: [ 6, 9, 0, -13, 0, 135, 0, ],
+         }, 
+     ],
+};
+
+Class.explosionColor = makeDeco(0, "red")
+Class.explosionColorsizegrow = {
+  PARENT: "bullet",
+  MOTION_TYPE: "withMaster",
+  CLEAR_ON_MASTER_UPGRADE: true,
+  BODY:{
+	  HEALTH: base.HEALTH * 1000,
+	  DAMAGE: 5
+  },
+  GODMODE: true,
+  ON: [{
+	  event: 'tick',
+	  handler: ({body}) => {
+			  body.SIZE += 2
+			  if (body.SIZE >= 60) {body.kill()}
+
+
+	  }
+  },
+],
+TURRETS: [
+  {
+	  POSITION: [20, 0, 0, 0, 0, 1],
+	  TYPE: ["explosionColor"],
+  },
+],
+}
+Class.minimissileboom = {
+    PARENT: "missile",
+    TURRETS: [{
+        POSITION: {
+            ANGLE: 180,
+            LAYER: 1
+        },
+        TYPE: ["genericEntity", {
+            INDEPENDENT: true,
+            COLOR: "#8c4344"
+        }]
+    }],
+    GUNS: [
+        {
+            POSITION: [14, 6, 1, 0, 0, 180, 0],
+            PROPERTIES: {
+                AUTOFIRE: true,
+                SHOOT_SETTINGS: combineStats([g.basic, g.skimmer, { reload: 0.5 }, g.lowPower, { recoil: 1.35 }, { speed: 1.3, maxSpeed: 1.3 }]),
+                TYPE: ["bullet", { PERSISTS_AFTER_DEATH: true }],
+                STAT_CALCULATOR: gunCalcNames.thruster,
+      },}, {
+           POSITION: [2, 14, 1, 2.5, 0, 0, 900],
+				PROPERTIES: {
+				  SHOOT_SETTINGS: combineStats([g.basic,{speed: 0.000000001, maxSpeed: 0, recoil: 0, range: 500, health: 250}]),
+				  TYPE: [Class.explosionColorsizegrow,{PERSISTS_AFTER_DEATH: true}], // idk why it wont shoot on death/be alive after bullet's death
+				  AUTOFIRE: false,
+          PERSISTS_AFTER_DEATH: true,
+          SHOOT_ON_DEATH: true,
+          ALPHA:0,
+         },}
+    ],
+}
+Class.exploder = { //t3 from missiler
+   PARENT: "genericTank",
+   LABEL: 'Exploder',
+   GUNS: [ {
+         POSITION: [ 38, 8, 1, -17, 0, 0, 0, ],
+         PROPERTIES: {
+            SHOOT_SETTINGS: combineStats([g.basic,g.pounder,{damage: 0,speed: 1.2,reload: 1.9}]),
+            TYPE: "minimissileboom"
+         }, }, {
+         POSITION: [ 9, 10, 1, 15, 0, 0, 0, ],
+         PROPERTIES: {
+            SHOOT_SETTINGS: combineStats([g.basic,g.fake,g.pounder,{damage: 0,speed: 1.2,reload: 1.9}]),
+            TYPE: "bullet"
+         }, }, {
+         POSITION: [ 3, 3, 1, 9, 3.2, 0, 0, ],
+         }, {
+         POSITION: [ 3, 3, 1, 9, -3.2, 0, 0, ],
+         }, {
+         POSITION: [ 3, 3, 1, -15, 0, 0, 0, ],
+         }, {
+         POSITION: [ 6, 11, 1.3, -21, 0, 0, 0, ],
+         }, {
+         POSITION: [ 6, 11, 1.3, -11, 0, -180, 0, ],
+         }
+     ],
+};
+
+// one shot for tarras
+
+Class.bulletExplode = { 
+    PARENT: "bullet",
+    TURRETS: [{
+        POSITION: {
+            ANGLE: 180,
+            LAYER: 1
+        },
+        TYPE: ["genericEntity", {
+            INDEPENDENT: true,
+            COLOR: "#8c4344"
+        }]
+    }],
+    GUNS: [
+        {
+           POSITION: [2, 14, 1, 2.5, 0, 0, 900],
+				PROPERTIES: {
+				  SHOOT_SETTINGS: combineStats([g.basic,{speed: 0, maxSpeed: 0, recoil: 0, range: 500, health: 250}]),
+				  TYPE: [Class.explosionColorsizegrow,{PERSISTS_AFTER_DEATH: true}],
+				  AUTOFIRE: false,
+          PERSISTS_AFTER_DEATH: true,
+          SHOOT_ON_DEATH: true,
+          ALPHA:0,
+         },}
+    ],
+}
+Class.oneshot = {
+   PARENT: "genericTank",
+   LABEL: 'One-Shot',
+   BODY: {
+     FOV: 1.5
+   },
+   GUNS: [ {
+         POSITION: [ 33, 7, 1, 0, 0, 0, 0, ],
+         PROPERTIES: {
+            SHOOT_SETTINGS: combineStats([g.basic,{reload: 13, damage: 2, speed: 3,health: 1}]),
+            TYPE: "bulletExplode"
+         }, }, {
+         POSITION: [ 12, 10, -2, 0, 0, 0, 0, ],
+         }, {
+         POSITION: [ 6, 8, -1.2, 13, 0, 0, 0, ],
+         }, {
+         POSITION: [ 6, 8, -1.2, 30, 0, 0, 0, ],
+         PROPERTIES: {
+            SHOOT_SETTINGS: combineStats([g.basic,g.fake,{reload: 13, damage: 5, speed: 2}]), // fake barrel
+            TYPE: "bullet"
+         }, }, 
+     ],
+};
 Class.python = {
     PARENT: "genericTank",
     LABEL: "Python",
@@ -3892,4 +4149,4 @@ Class.basic.UPGRADES_TIER_1 = ["twin", "sniper", "machineGun", "flankGuard", "di
         Class.helix.UPGRADES_TIER_3 = ["triplex", "quadruplex", "coil", "duplicator"]
         Class.sidewinder.UPGRADES_TIER_3 = ["coil", "python", "ranch", "oroboros", "cocci"]
         Class.undertow.UPGRADES_TIER_3 = ["riptide"]
-        Class.repeater.UPGRADES_TIER_3 = ["iterator", "duplicator"]
+        Class.repeater.UPGRADES_TIER_3 = ["iterator", "duplicator", "missiler", "exploder", "thornMissiler"]
